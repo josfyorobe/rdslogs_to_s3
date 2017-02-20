@@ -80,7 +80,7 @@ def lambda_handler(event, context):
                 objectName = S3BucketPrefix + dbLog['LogFileName']
                 S3response = S3client.put_object(Bucket=S3BucketName, Key=objectName,Body=byteData)
             except botocore.exceptions.ClientError as e:
-                return "Error writting object to S3 bucket, S3 ClientError: " + e.response['Error']['Message']
+                return "Error writing object to S3 bucket, S3 ClientError: " + e.response['Error']['Message']
             print("Writting log file %s to S3 bucket %s" % (objectName,S3BucketName))
     try:
         S3response = S3client.put_object(Bucket=S3BucketName, Key=lastReceivedFile, Body=str.encode(str(lastWrittenThisRun)))
