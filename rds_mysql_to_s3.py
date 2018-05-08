@@ -83,7 +83,7 @@ def lambda_handler(event, context):
             while logFile['AdditionalDataPending']:
                 logFile = RDSclient.download_db_log_file_portion(DBInstanceIdentifier=RDSInstanceName, LogFileName=dbLog['LogFileName'],Marker=logFile['Marker'])
                 logFileData += logFile['LogFileData']
-            byteData = str.encode(logFileData)
+            byteData = logFileData.encode('utf-8')
             try:
                 objectName = S3BucketPrefix + dbLog['LogFileName']
                 S3response = S3client.put_object(Bucket=S3BucketName, Key=objectName,Body=byteData)
