@@ -16,12 +16,13 @@ import os
 import boto3, botocore
 
 
-S3BUCKET = os.environ['S3BUCKET']
-S3PREFIX = os.environ['S3PREFIX']
-RDSINSTANCE = os.environ['RDSINSTANCE']
-LOGNAME = os.environ['LOGNAME']
-LASTRECEIVED = os.environ['LASTRECEIVED']
-REGION = os.environ['REGION']
+S3BUCKET = os.environ['BucketName']
+S3PREFIX = os.environ['S3BucketPrefix']
+RDSINSTANCE = os.environ['RDSInstanceName']
+LOGNAME = os.environ['LogNamePrefix']
+LOGCOUNT = os.environ['LogCount']
+LASTRECEIVED = os.environ['lastReceivedFile']
+REGION = os.environ['Region']
 
 
 def lambda_handler(event, context):
@@ -32,6 +33,7 @@ def lambda_handler(event, context):
         S3BucketPrefix = event['S3BucketPrefix']
         RDSInstanceName = event['RDSInstanceName']
         logNamePrefix = event['LogNamePrefix']
+        logCount = int(event['LogCount'])
         lastReceivedFile = S3BucketPrefix + event['lastReceivedFile']
         region = event['Region']
     else:
@@ -39,6 +41,7 @@ def lambda_handler(event, context):
         S3BucketPrefix = S3PREFIX
         RDSInstanceName = RDSINSTANCE
         logNamePrefix = LOGNAME
+        logCount = int(LOGCOUNT)
         lastReceivedFile = S3BucketPrefix + LASTRECEIVED
         region = REGION
     RDSclient = boto3.client('rds',region_name=region)
@@ -70,7 +73,7 @@ def lambda_handler(event, context):
         lastWrittenTime = int(S3response['Body'].read(S3response['ContentLength']))
         print("Found marker from last log download, retrieving log files with lastWritten time after %s" % str(lastWrittenTime))
 
-    for dbLog in dbLogs['DescribeDBLogFiles']:
+    for dbLog in dbLogs['DescribeDBLogFiles'][:logCount]:
         if ( int(dbLog['LastWritten']) > lastWrittenTime ) or firstRun:
             print("Downloading log file: %s found and with LastWritten value of: %s " % (dbLog['LogFileName'],dbLog['LastWritten']))
             if int(dbLog['LastWritten']) > lastWrittenThisRun:
