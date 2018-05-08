@@ -16,34 +16,18 @@ import os
 import boto3, botocore
 
 
-S3BUCKET = os.environ['BucketName']
-S3PREFIX = os.environ['S3BucketPrefix']
-RDSINSTANCE = os.environ['RDSInstanceName']
-LOGNAME = os.environ['LogNamePrefix']
-LOGCOUNT = os.environ['LogCount']
-LASTRECEIVED = os.environ['lastReceivedFile']
-REGION = os.environ['Region']
-
-
 def lambda_handler(event, context):
     firstRun = False
     logFileData = ""
-    if {'BucketName','S3BucketPrefix','RDSInstanceName','LogNamePrefix','lastReceivedFile','Region'}.issubset(event):
-        S3BucketName = event['BucketName']
-        S3BucketPrefix = event['S3BucketPrefix']
-        RDSInstanceName = event['RDSInstanceName']
-        logNamePrefix = event['LogNamePrefix']
-        logCount = int(event['LogCount'])
-        lastReceivedFile = S3BucketPrefix + event['lastReceivedFile']
-        region = event['Region']
-    else:
-        S3BucketName = S3BUCKET
-        S3BucketPrefix = S3PREFIX
-        RDSInstanceName = RDSINSTANCE
-        logNamePrefix = LOGNAME
-        logCount = int(LOGCOUNT)
-        lastReceivedFile = S3BucketPrefix + LASTRECEIVED
-        region = REGION
+
+    S3BucketName = os.environ['BucketName']
+    S3BucketPrefix = os.environ['S3BucketPrefix']
+    RDSInstanceName = os.environ['RDSInstanceName']
+    logNamePrefix = os.environ['LogNamePrefix']
+    logCount = int(os.environ['LogCount']) if 'LogCount' in os.environ else None
+    lastReceivedFile = S3BucketPrefix + os.environ['lastReceivedFile']
+    region = os.environ['Region']
+
     RDSclient = boto3.client('rds',region_name=region)
     S3client = boto3.client('s3',region_name=region)
     dbLogs = RDSclient.describe_db_log_files( DBInstanceIdentifier=RDSInstanceName, FilenameContains=logNamePrefix)
